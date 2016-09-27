@@ -1,0 +1,8 @@
+Portsetter --option <puerto>
+    opciones:
+        - ?, -h, --help     Mostrar la página de ayuda [No debe tener ningún otro argumento]
+        -a, --unos, -!      Mostrar información sobre este software
+        -v, --version       Muestra la versión
+        -p, --port          follwing argumento es "puerto" [Necesaria para la ejecución no ayuda]
+        -a, --unos          información impresiones sobre el software
+        -e [ 'ENVVAR']      Se utiliza junto -p o --port, que se utiliza para especificar una variable de entorno para su uso como el puerto, el valor predeterminado es "puerto"

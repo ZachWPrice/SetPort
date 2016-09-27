@@ -1,0 +1,27 @@
+[4]./setport
+[0]./setport -h
+[0]./setport --help
+[0]./setport -p 4040
+[0]./setport --port 4040
+[0]./setport -?
+[0]./setport -!
+[0]./setport --about
+[0]./setport -v
+[0]./setport --version
+[0]./setport -p -e
+[0]./setport --port -e
+[0]./setport -p -e PORT
+[0]./setport --port -e PORT
+[2]./setport help
+[2]./setport -help
+[2]./setport --h
+[2]./setport -h --help
+[2]./setport -hs
+[3]./setport -p --port 9
+[3]./setport -p 77 33
+[1]./setport -p -21
+[1]./setport -p 0
+[2]./setport --port
+[1]./setport -p 90642
+[2]./setport -x 45321
+[2]./setport -P 714
