@@ -22,7 +22,9 @@ Portsetter --option <port>
         -e ['ENVVAR']   Used along -p or --port, used to specify an environment variable to use as the port, the default is 'PORT'
 ```
 ####Localization: 
-  Currently English and Spanish are the only supported languages. The software will look at a few enfironment variables to find which language to use
+  Currently English and Spanish are the only supported languages supported by default. The software will look at a few enfironment variables to find which language to use.
+  If you would like to add any languages, please create a folder with the cooresponding two-character language code. with the same files found in the provided language folders. 
+  All information in those folder should follow the same structure, and all files must be included. Otherwise the software will exhibit undefined behavior. 
 
 ####Purpose: 
   This is a school project at UVU under instructor Wagstaff. Who approved of this project being put into a Git repository.
