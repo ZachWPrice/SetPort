@@ -10,6 +10,13 @@ You may need root permissions to run this, as it will add the software to your P
 You can then run the software as 'sudo setport' - to remove the sudo, change the 
 owner of /bin/setport to the owner that you're using. 
 
+  At that point, you can follow the usage as stated below. 
+  
+  Finally, to run the test cases, please navigate to the 'Testing' folder, and run ./test_setport.cpp.o
+This should run through all of the tests found in 'Testing/TestCmds/mainTestCmds.txt' in English and Spanish. 
+Tests can be added to this file as needed and they will run along with the rest though you will not be able to
+see so in the output of the tests (only if the test fails will mention of it be found).
+
 ####Usage: 
 ```
 Portsetter --option <port>

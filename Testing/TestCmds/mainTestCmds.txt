@@ -1,27 +1,27 @@
-[4]./setport
-[0]./setport -h
-[0]./setport --help
-[0]./setport -p 4040
-[0]./setport --port 4040
-[0]./setport -?
-[0]./setport -!
-[0]./setport --about
-[0]./setport -v
-[0]./setport --version
-[0]./setport -p -e
-[0]./setport --port -e
-[0]./setport -p -e PORT
-[0]./setport --port -e PORT
-[2]./setport help
-[2]./setport -help
-[2]./setport --h
-[2]./setport -h --help
-[2]./setport -hs
-[3]./setport -p --port 9
-[3]./setport -p 77 33
-[1]./setport -p -21
-[1]./setport -p 0
-[2]./setport --port
-[1]./setport -p 90642
-[2]./setport -x 45321
-[2]./setport -P 714
+[4]./portsetter.cpp.o
+[0]./portsetter.cpp.o -h
+[0]./portsetter.cpp.o --help
+[0]./portsetter.cpp.o -p 4040
+[0]./portsetter.cpp.o --port 4040
+[0]./portsetter.cpp.o -?
+[0]./portsetter.cpp.o -!
+[0]./portsetter.cpp.o --about
+[0]./portsetter.cpp.o -v
+[0]./portsetter.cpp.o --version
+[0]./portsetter.cpp.o -p -e
+[0]./portsetter.cpp.o --port -e
+[0]./portsetter.cpp.o -p -e PORT
+[0]./portsetter.cpp.o --port -e PORT
+[2]./portsetter.cpp.o help
+[2]./portsetter.cpp.o -help
+[2]./portsetter.cpp.o --h
+[2]./portsetter.cpp.o -h --help
+[2]./portsetter.cpp.o -hs
+[3]./portsetter.cpp.o -p --port 9
+[3]./portsetter.cpp.o -p 77 33
+[1]./portsetter.cpp.o -p -21
+[1]./portsetter.cpp.o -p 0
+[2]./portsetter.cpp.o --port
+[1]./portsetter.cpp.o -p 90642
+[2]./portsetter.cpp.o -x 45321
+[2]./portsetter.cpp.o -P 714

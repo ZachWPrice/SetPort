@@ -6,6 +6,7 @@
 #include <cmath>
 #include <regex>
 #include <locale>
+#include <dirent.h>
 
 using namespace std;
 
@@ -36,63 +37,143 @@ string Tests[] {
     "TestCmds/langTestCmds.txt"
 };
 
-string msg_en[] = {
-    "Listening on Port: ", 
-    "No command line arguments passed!",
-    "No valid 'PORT' environment variable!\n",
-    "Invalid argument: ",
-    "Invalid Port: ",
-    "Invalid environment variable: " ,
-    "Too many arguments passed\n",
-    "Error Opening: "
+vector<string> lang;
+vector<string> docs;
 
-};
-
-string msg_es[] = {
-    "La escucha del puerto:",
-    "No hay argumentos de línea de comando que se pasa!",
-    "No 'PORT' variable de entorno válido!\n",
-    "Argumento no válido: ",
-    "El puerto no válido:",
-    "Variable de entorno no válido:",
-    "Demasiados argumentos pasado\n",
-    "Apertura de error: "
-};
-
-string doc_en[]{
-    "../doc/en/setport.usage_en.txt",
-    "../doc/en/setport.about_en.txt",
-    "../doc/en/setport.version_en.txt"
-};
-
-string doc_es[]{
-    "../doc/es/setport.usage_es.txt",
-    "../doc/es/setport.about_es.txt",
-    "../doc/es/setport.version_es.txt"
-};
-
-string* lang = msg_en;
-string* docs = doc_en;
-
-int skipEnvVar(char* env_lang){
+//Name: compseMsgArray
+//Purpose: 
+    //Will get each line of a file and put that into a vector
+//Parameters: 
+    //String - Will be the name of a file
+//Returns:
+    //Vector of each of the lines in the file
+vector<string> composeMsgArray(string toSplit){
+    ifstream reading(toSplit.c_str(), ifstream::in);
+    vector<string> toRet;
     
+    while(reading.good()){
+        char tmp[256];
+        reading.getline(tmp, 256);
+        toRet.push_back(tmp);
+    }
+    return toRet;
+}
+
+
+//Name: skipEnvVar
+//Purpose: 
+    //Will skip the environment variableif it is a known
+    //value that is not helpful
+//Parameters:
+    //char* - The environment variable that is being reviewed
+//Returns: 
+    //True if the value is known, and should be skipped
+    //False if the value is not known
+bool skipEnvVar(char* env_lang){
     int skipVarCount = 4;
     
-    const char* toSkip[skipVarCount] = {
+    const char* toSkip[] = {
         "\0",
         "",
         "C",
         "C.UTF-8"
     };
+    
     for(int c = 0; c < skipVarCount; c++){
         if(strcmp(env_lang, toSkip[c]) == 0) {
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
+//Name: setLang
+//Purpose:
+    // Will set the language to any 2 digit language code that has a corresponding file in 'doc'
+//Patameters:
+    //N/A
+//Returns:
+    //N/A
+string checkCurrLang(){
+    
+    DIR *d = opendir("../doc/");
+    struct dirent *dir;
+    vector<string> dirlist;
+    if (d)
+    {
+        while ( (dir = readdir(d)) != NULL)
+        {
+            if(strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0){
+                string tmp = dir->d_name;
+                dirlist.push_back(tmp);
+            }
+        }
+        closedir(d);
+    }
+    
+    regex myRegex;
+    locale mylocale ("");
+    
+    myRegex.imbue (mylocale);
+    myRegex.assign ("[a-z][a-z].*");
+
+    int envVarToCheck = 3;
+    
+    const char* toCheck[] = {
+        "LANGUAGE", 
+        "LC_ALL",
+        "LANG"
+    };
+    
+    for(int i = 0; i < envVarToCheck; i++){
+        char* env_lang = getenv(toCheck[i]);
+        if(skipEnvVar(env_lang)) continue;
+        
+        if(regex_search(env_lang, myRegex)){
+            for(int j = 0; j < dirlist.size(); j++){
+                if(strcmp(env_lang, dirlist[j].c_str()) == 0){
+                    string temp = dirlist[j];
+                    lang = composeMsgArray("../doc/" + temp + "/setport.messages.txt");
+                    docs.push_back("../doc/" + temp + "/setport.usage.txt");
+                    docs.push_back("../doc/" + temp + "/setport.about.txt");
+                    docs.push_back("../doc/" + temp + "/setport.version.txt");
+                    temp = env_lang;
+                    return "Changing to " + temp + ", one second!";
+                }
+            }
+        }
+    }
+    lang = composeMsgArray("../doc/en/setport.messages.txt");
+    docs.push_back("../doc/en/setport.usage.txt");
+    docs.push_back("../doc/en/setport.about.txt");
+    docs.push_back("../doc/en/setport.version.txt");
+    return "We will proceed using English.";
+}
+
+//Name: getInitialLang
+    //Purpose: 
+        // Will get the initial language variables, and return a 
+        //string to allow it to be reset to that default after the tests have run
+    //Parameters: 
+        //  N/A
+    //Returns: 
+        // Char* - Contains command to reset the language at the end of the tests
 char* getInitialLang(){
+    
+    DIR *d = opendir("../doc/");
+    struct dirent *dir;
+    vector<string> dirlist;
+    if (d)
+    {
+        while ( (dir = readdir(d)) != NULL)
+        {
+            if(strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0){
+                string tmp = dir->d_name;
+                dirlist.push_back(tmp);
+            }
+        }
+        closedir(d);
+    }
     
     regex myRegex;
     locale mylocale ("");
@@ -105,7 +186,7 @@ char* getInitialLang(){
     
     int envVarToCheck = 3;
     
-    const char* toCheck[envVarToCheck] = {
+    const char* toCheck[] = {
         "LANGUAGE", 
         "LC_ALL",
         "LANG"
@@ -119,29 +200,15 @@ char* getInitialLang(){
         if(!skipEnvVar(env_lang)) break;
 
         if(regex_search(env_lang, myRegex)){
-            //There was a valid 2digit lang code
-            //see if it is english
-            if(strcmp(env_lang, "en") == 0){
-                strcpy(composedCmd, "export ");
-                strcat(composedCmd, toCheck[i]);
-                strcat(composedCmd, "=");
-                strcat(composedCmd, env_lang);
-                return composedCmd;
-            }
-            else if(strcmp(env_lang, "es") == 0){
-                strcpy(composedCmd, "export ");
-                strcat(composedCmd, toCheck[i]);
-                strcat(composedCmd, "=");
-                strcat(composedCmd, env_lang);
-                return composedCmd;
-            }
-            else{
-                //Language Found, not valid for program
-                strcpy(composedCmd, "export ");
-                strcat(composedCmd, toCheck[i]);
-                strcat(composedCmd, "=");
-                strcat(composedCmd, env_lang);
-                return composedCmd;
+            
+            for(int j = 0; j < dirlist.size(); j++){
+                if(strcmp(env_lang, dirlist[j].c_str()) == 0){
+                    strcpy(composedCmd, "export ");
+                    strcat(composedCmd, toCheck[i]);
+                    strcat(composedCmd, "=");
+                    strcat(composedCmd, env_lang);
+                    return composedCmd;
+                }
             }
         }
     }
@@ -152,53 +219,14 @@ char* getInitialLang(){
     return composedCmd;
 }
 
-string checkCurrLang(){
-        
-    regex myRegex;
-    locale mylocale ("");
-    
-    myRegex.imbue (mylocale);
-    myRegex.assign ("[a-z][a-z](.|_)*");
-    
-    int envVarToCheck = 3;
-    
-    const char* toCheck[3] = {
-        "LANGUAGE", 
-        "LC_ALL",
-        "LANG"
-    };
-    
-    for(int i = 0; i < envVarToCheck; i++){
-        char* env_lang = getenv(toCheck[i]);
-        
-        if(!skipEnvVar(env_lang)) break;
-
-        if(regex_search(env_lang, myRegex)){
-            //There was a valid 2digit lang code
-            //see if it is english
-            if(strcmp(env_lang, "en") == 0){
-                lang = msg_en; 
-                docs = doc_en; 
-                return "";
-            }
-            else if(strcmp(env_lang, "es") == 0){
-                lang = msg_es; 
-                docs = doc_es;
-                return "Changing to Spanish, one second!";
-            }
-            else{
-
-                lang = msg_en; 
-                docs = doc_en;
-                string envVal;
-                envVal.assign(env_lang);
-                return "No Valid translation for: " + envVal + "\nProceeding using English.";
-            }
-        }
-    }
-    return "";
-}
-
+//Name: msgSubString
+    //Purpose: 
+        // Used to split strings on a given delim
+    //Parameters: 
+        // String/toSplit - What will be split
+        // string/delim = what the function will split on
+    //Returns:
+        // vector<string> = a vector of the string after it has been split on the delim.
 vector<string> msgSubString(string toSplit, string delim){
     string tmpStr = toSplit;
     size_t pos = 0;
@@ -214,6 +242,15 @@ vector<string> msgSubString(string toSplit, string delim){
     return cmdArray;
 }
 
+//Name: getFile
+    //Purpose: 
+        // This will open a file, resize a string to hold ALL of the contents of said file,
+        // then return that string
+    //Parameters: 
+        // strings/fileName - Name of the file that will be read from
+    //Returns:
+        // string - The large string with the file contents 
+        // usually used when printing something like the 'usage' statement
 string getFile(string fileName){
     ifstream usageFile(fileName, ifstream::in);
     string toPrint;
@@ -232,8 +269,18 @@ string getFile(string fileName){
     return toPrint;
 }
 
-//This method will compare the output (from test.txt) against the msg (if there is any), and the expected file
-int compareOutExpected(string msg, string fileName = "N/A") {
+//Name: compareOutExpected
+    //Purpose: 
+        //compare the output (from test.txt) against the msg (if there is any), 
+        //and the expected file
+    //Parameters: 
+        // vector<string>/msg - any messages that printed that were not part of the 
+        // 'body' of the output, such as anything that would be found in the setport.messages.txt file
+    //Returns:
+        // int:
+            // 0 - The test was successful
+            // 1 - The test was unsuccessful
+int compareOutExpected(vector<string> msg, string fileName = "N/A") {
     
     //This will get the output of the outputfile from the cmd
     string outputString = getFile("../test.txt");
@@ -244,13 +291,13 @@ int compareOutExpected(string msg, string fileName = "N/A") {
     vector<string> outputSplitString = msgSubString(outputString, "\n");
     vector<string> splitTxtLine = msgSubString(txtLine, "\n");
     
-    
-    if(msg != "N/A"){
-        if(outputSplitString.front().compare(msg) != 0){
+    while(!msg.empty()){
+        if(outputSplitString.front().compare(msg.front()) != 0){
             cout << "Initial Message Difference" << endl;
             return 1;  
         }
         outputSplitString.erase(outputSplitString.begin());
+        msg.erase(msg.begin());
     }
 
     if( fileName == "N/A") return 0; 
@@ -266,8 +313,20 @@ int compareOutExpected(string msg, string fileName = "N/A") {
     return 0;
 }
 
-//After printing the error message, it will display the usage statement
-int test(const string& commandLine, int expectedReturn, string msg) {
+//Name: test
+    //Purpose: 
+        // This will run the program, and determine what its output is from the 
+        //arguments that it used to call the software 
+    //Parameters: 
+        // const string&/commandLine - This is the command that will run the software
+        // int/expectedReturn - This is what the exit code of the software should be
+        // vector<string> msg - if a message has occured up to this point it can be 
+            //passed through to be evaluated after any other messages have been passed to it
+    //Returns:
+        // int:
+            // 0 - Successful test
+            // non-0 - unsuccessful test
+int test(const string& commandLine, int expectedReturn, vector<string> msg) {
     
     
     string program = "cd .. && " + commandLine + " > ./test.txt";
@@ -297,7 +356,7 @@ int test(const string& commandLine, int expectedReturn, string msg) {
                 return compareOutExpected(msg, docs[VERSION]);
             }
             else{
-                msg =  lang[INVALID_ARG] + cmdArray[1] + "\n";
+                msg.push_back(lang[INVALID_ARG] + cmdArray[1] + "\n");
                 return compareOutExpected(msg, docs[VERSION]);
             }
         }
@@ -305,22 +364,22 @@ int test(const string& commandLine, int expectedReturn, string msg) {
             if(cmdArray[2] == "-e"){
                 char* env_p = getenv("PORT");
                 if(env_p != NULL){
-                    msg = lang[SUCCESSFUL_LISTEN] + (string)env_p;
+                    msg.push_back(lang[SUCCESSFUL_LISTEN] + (string)env_p);
                     return compareOutExpected(msg);
                 }
                 return 1;
             }
             if(long int prt = atol(cmdArray[2].c_str()) != 0){
-                msg = lang[SUCCESSFUL_LISTEN] + cmdArray[2];
+                msg.push_back(lang[SUCCESSFUL_LISTEN] + cmdArray[2]);
                 return compareOutExpected(msg);
             }
-            msg = lang[SUCCESSFUL_LISTEN] + cmdArray[2];
+            msg.push_back(lang[SUCCESSFUL_LISTEN] + cmdArray[2]);
             return compareOutExpected(msg);
         }
         else if(cmdArray.size() == 4){
             char* env_p = getenv(cmdArray[3].c_str());
             if(env_p != NULL){
-                msg = lang[SUCCESSFUL_LISTEN] + (string)env_p;
+                msg.push_back(lang[SUCCESSFUL_LISTEN] + (string)env_p);
                 return compareOutExpected(msg);
             }
             return 1; 
@@ -328,10 +387,10 @@ int test(const string& commandLine, int expectedReturn, string msg) {
         else return 1;
     }
     else if( expectedReturn == 1 ) {
-        msg = lang[INVALID_PORT] + cmdArray[2];
+        msg.push_back(lang[INVALID_PORT] + cmdArray[2]);
     }
     else if( expectedReturn == 2 ) {
-        msg =  lang[INVALID_ARG] + cmdArray[1];
+        msg.push_back(lang[INVALID_ARG] + cmdArray[1]);
     }
     else if( expectedReturn == 3 ) {
         if(strcmp(cmdArray[1].c_str(), "-p") == 0 || strcmp(cmdArray[1].c_str(), "--port") == 0) {
@@ -340,23 +399,33 @@ int test(const string& commandLine, int expectedReturn, string msg) {
                     return 1;
                 }
                 else {
-                    msg = lang[INVALID_ARG] + (string)cmdArray[3];
+                    msg.push_back(lang[INVALID_ARG] + (string)cmdArray[3]);
                     return compareOutExpected(msg);
                 }
             }
             else{
-                msg = lang[INVALID_ARG] + (string)cmdArray[2];
+                msg.push_back(lang[INVALID_ARG] + (string)cmdArray[2]);
                 return compareOutExpected(msg);
             }
         }
     }
     else if( expectedReturn == 4 ) {
-        msg = lang[NO_ARGS];
+        msg.push_back(lang[NO_ARGS]);
     }
     else cout << "Error" << endl;
     return compareOutExpected(msg, docs[USAGE]);
 }
 
+//Name: runTests
+    //Purpose: 
+        // This gathers the tests to run from mainTestCmds.txt, and runs each
+        //of the tests by calling "test"
+    //Parameters: 
+        // string/testCmds - file to read all the tests from
+    //Returns:
+        // int
+            // 0 - set of tests were successful
+            // non-0 - set of tests was unsuccessful
 //Main, will check the # of arguments
 //Depending on the number of args, it will check what was passed for a valid option
 int runTests(string testCmds){
@@ -391,25 +460,33 @@ int runTests(string testCmds){
     testFile.close();
     
     
-    string msg = "N/A"; 
+    vector<string> msg;
     string tmp = "";
-    if((tmp = checkCurrLang()) != "") msg = tmp;
+    if((tmp = checkCurrLang()) != "") msg.push_back(tmp);
     
-    
-    int endStatus = 0;
     //loop through each of the test cases, passing them to the 'test' function
     for(int i = 0; i < tests.size(); i++){
         int ret = test(tests[i][1], stoi(tests[i][0]), msg);
-        if(ret != 0) return endStatus = 1;
+        if(ret != 0) return 1;
 
     }
-    return endStatus;
+    return 0;
 }
 
-//Main will now check the language, 'save' that value. 
-//It will set the language to english, and run the main tests. 
-//Then it will set the language to spanish, and run the tests. 
-//Then it will set the language back to the initial value
+//Name: main
+    //Purpose: 
+        //Main will now check the language, 'save' that value. 
+        //It will set the language to english, and run the main tests. 
+        //Then it will set the language to spanish, and run the tests. 
+        //It will then set the language to polish (any language we don't have)
+            //And test that output
+        //Then it will set the language back to the initial value
+    //Parameters: 
+        // Command line arguments
+    //Returns:
+        // int: 
+            // 0 - Tests were successful
+            // 1 - Tests failed
 int main(int argc, char* args[]) {
     
     //Check all of the envVars get a valid one, if none valid, continue3

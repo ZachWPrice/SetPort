@@ -115,9 +115,11 @@ void setLang(){
     for(int i = 0; i < envVarToCheck; i++){
         char* env_lang = getenv(toCheck[i]);
         if(skipEnvVar(env_lang)) continue;
+        
         if(regex_search(env_lang, myRegex)){
             for(int j = 0; j < dirlist.size(); j++){
                 if(strcmp(env_lang, dirlist[j].c_str()) == 0){
+                    cout << "Changing to " << env_lang << ", one second!" << endl;
                     string temp = dirlist[j];
                     lang = composeMsgArray("doc/" + temp + "/setport.messages.txt");
                     docs.push_back("doc/" + temp + "/setport.usage.txt");
@@ -126,9 +128,6 @@ void setLang(){
                     return;
                 }
             }
-        }
-        else{
-            
         }
     }
     cout << "We will proceed using English." << endl;
@@ -212,7 +211,6 @@ void printVersion(){
     cout << getFile(docs[VERSION]);
     return;
 }
-
 
 //Name: printError
 //Purpose:
