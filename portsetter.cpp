@@ -4,6 +4,7 @@
 #include <cmath>
 #include <regex>
 #include <locale>
+#include <dirent.h>
 
 using namespace std;
 
@@ -24,48 +25,22 @@ enum Docs {
     VERSION
 };
 
-string msg_en[] = {
-    "Listening on Port: ", 
-    "No command line arguments passed!\n",
-    "No valid 'PORT' environment variable!\n",
-    "Invalid argument: ",
-    "Invalid Port: ",
-    "Invalid environment variable: " ,
-    "Too many arguments passed\n",
-    "Error Opening: "
+vector<string> lang;
+vector<string> docs;
 
-};
-
-string msg_es[] = {
-    "La escucha del puerto:",
-    "No hay argumentos de línea de comando que se pasa!\n",
-    "No 'PORT' variable de entorno válido!\n",
-    "Argumento no válido: ",
-    "El puerto no válido:",
-    "Variable de entorno no válido:",
-    "Demasiados argumentos pasado\n",
-    "Apertura de error: "
-};
-
-string doc_en[]{
-    "doc/en/setport.usage_en.txt",
-    "doc/en/setport.about_en.txt",
-    "doc/en/setport.version_en.txt"
-};
-
-string doc_es[]{
-    "doc/es/setport.usage_es.txt",
-    "doc/es/setport.about_es.txt",
-    "doc/es/setport.version_es.txt"
-};
-
-string* lang = msg_en;
-string* docs = doc_en;
-
-int skipEnvVar(char* env_lang){
+//Name: skipEnvVar
+//Purpose: 
+    //Will skip the environment variableif it is a known
+    //value that is not helpful
+//Parameters:
+    //char* - The environment variable that is being reviewed
+//Returns: 
+    //True if the value is known, and should be skipped
+    //False if the value is not known
+bool skipEnvVar(char* env_lang){
     int skipVarCount = 4;
     
-    const char* toSkip[skipVarCount] = {
+    const char* toSkip[] = {
         "\0",
         "",
         "C",
@@ -73,24 +48,65 @@ int skipEnvVar(char* env_lang){
     };
     
     for(int c = 0; c < skipVarCount; c++){
-        if(strcmp(env_lang, toSkip[c])) {
-            return 1;
+        if(strcmp(env_lang, toSkip[c]) == 0) {
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
+//Name: compseMsgArray
+//Purpose: 
+    //Will get each line of a file and put that into a vector
+//Parameters: 
+    //String - Will be the name of a file
+//Returns:
+    //Vector of each of the lines in the file
+vector<string> composeMsgArray(string toSplit){
+    ifstream reading(toSplit.c_str(), ifstream::in);
+    vector<string> toRet;
+    
+    while(reading.good()){
+        char tmp[256];
+        reading.getline(tmp, 256);
+        toRet.push_back(tmp);
+    }
+    return toRet;
+}
+
+//Name: setLang
+//Purpose:
+    // Will set the language to any 2 digit language code that has a corresponding file in 'doc'
+//Patameters:
+    //N/A
+//Returns:
+    //N/A
 void setLang(){
+    
+    DIR *d = opendir("doc/");;
+    struct dirent *dir;
+    vector<string> dirlist;
+    if (d)
+    {
+        while ( (dir = readdir(d)) != NULL)
+        {
+            if(strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0){
+                string tmp = dir->d_name;
+                dirlist.push_back(tmp);
+            }
+        }
+        closedir(d);
+    }
     
     regex myRegex;
     locale mylocale ("");
     
     myRegex.imbue (mylocale);
-    myRegex.assign ("[a-z][a-z](.|_)*");
+    myRegex.assign ("[a-z][a-z].*");
 
     int envVarToCheck = 3;
     
-    const char* toCheck[envVarToCheck] = {
+    const char* toCheck[] = {
         "LANGUAGE", 
         "LC_ALL",
         "LANG"
@@ -98,34 +114,38 @@ void setLang(){
     
     for(int i = 0; i < envVarToCheck; i++){
         char* env_lang = getenv(toCheck[i]);
-        
-        if(!skipEnvVar(env_lang)) break;
-
+        if(skipEnvVar(env_lang)) continue;
         if(regex_search(env_lang, myRegex)){
-            //There was a valid 2digit lang code
-            //see if it is english
-            if(strcmp(env_lang, "en") == 0){
-                lang = msg_en; 
-                docs = doc_en; 
-                return;
-            }
-            else if(strcmp(env_lang, "es") == 0){
-                cout << "Changing to Spanish, one second!" << endl;
-                lang = msg_es; 
-                docs = doc_es;
-                return;
-            }
-            else{
-                cout << "No Valid translation for: " << env_lang << "\n" << "Proceeding using English." << endl;
-                lang = msg_en; 
-                docs = doc_en;
-                return;
+            for(int j = 0; j < dirlist.size(); j++){
+                if(strcmp(env_lang, dirlist[j].c_str()) == 0){
+                    string temp = dirlist[j];
+                    lang = composeMsgArray("doc/" + temp + "/setport.messages.txt");
+                    docs.push_back("doc/" + temp + "/setport.usage.txt");
+                    docs.push_back("doc/" + temp + "/setport.about.txt");
+                    docs.push_back("doc/" + temp + "/setport.version.txt");
+                    return;
+                }
             }
         }
+        else{
+            
+        }
     }
+    cout << "We will proceed using English." << endl;
+            lang = composeMsgArray("doc/en/setport.messages.txt");
+            docs.push_back("doc/en/setport.usage.txt");
+            docs.push_back("doc/en/setport.about.txt");
+            docs.push_back("doc/en/setport.version.txt");
     return;
 }
 
+//Name: getFile
+//Purpose:
+    //Opens a file, and returns a string with all of the contents of said file.
+//Patameters:
+    // The file name that will be opened.
+//Returns:
+    // String with all contents of the file.
 string getFile(string fileName){
     ifstream usageFile(fileName, ifstream::in);
     string toPrint;
@@ -144,37 +164,76 @@ string getFile(string fileName){
     return toPrint;
 }
 
-//Run when -p with a valid port has been passed (or --port)
+//Name: print Success
+//Purpose:
+    // Will print out "listening on port: x" when invoked
+//Patameters:
+    // Port number being listened on
+//Returns:
+    // N/A
 void printSuccess(long port) {
     cout << lang[SUCCESSFUL_LISTEN] << port << "\n";
     return;
 }
 
-//This will be called when -h is passed by iteself (or --help)
+//Name: printUsage
+//Purpose:
+    // Will print the usage message when invoked
+//Patameters:
+    // N/A
+//Returns:
+    // N/A
 void printUsage() {
     cout << getFile(docs[USAGE]);
     return;
 }
 
+//Name: printAbout
+//Purpose:
+    // Will print the 'About' message
+//Patameters:
+    // N/A
+//Returns:
+    // N/A
 void printAbout() {
     
     cout << getFile(docs[ABOUT]);
     return;
 }
 
+//Name: printVersion
+//Purpose:
+    // Will print the version information
+//Patameters:
+    // N/A
+//Returns:
+    // N/A
 void printVersion(){
     cout << getFile(docs[VERSION]);
     return;
 }
 
-//After printing the error message, it will display the usage statement
+
+//Name: printError
+//Purpose:
+    // Prints an error message, then will call printUsage()
+//Patameters:
+    // String message stating what the problem was
+//Returns:
+    // N/A
 void printError(string msg) {
     cout << msg;
     printUsage();
 }
 
-//Main, will check the # of arguments
-//Depending on the number of args, it will check what was passed for a valid option
+//Name: main
+//Purpose:
+    // Heavy lifter Directs the program
+//Patameters:
+    // input from the command line
+//Returns:
+    // int: status code that can be used to tell of the software 
+        //exited correctly or with an error
 int main(int argc, char* args[]) {
     string errMsg = "";
     int endStatus = 0;
@@ -184,7 +243,7 @@ int main(int argc, char* args[]) {
     switch(argc){
         //When no arguments have been passed
         case 1:
-            errMsg = lang[NO_ARGS];
+            errMsg = lang[NO_ARGS] + "\n";
             endStatus = 4;
             break;
         //When one argument has been passed
@@ -219,7 +278,7 @@ int main(int argc, char* args[]) {
                         return endStatus;
                     }
                     else {
-                        errMsg = lang[NO_PORT_ENVAR];
+                        errMsg = lang[NO_PORT_ENVAR] + "\n";
                         endStatus = 1;
                     }
                 }
@@ -251,14 +310,14 @@ int main(int argc, char* args[]) {
                 }
             }
             else{
-                errMsg = lang[TOO_MANY_ARGS];
+                errMsg = lang[TOO_MANY_ARGS] + "\n";
                 endStatus = 3;
                 break;
             }
             break;
         //When more than two arguments have been passed
         default: 
-            errMsg = lang[TOO_MANY_ARGS];
+            errMsg = lang[TOO_MANY_ARGS] + "\n";
             endStatus = 3;
             break;
     }

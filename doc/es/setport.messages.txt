@@ -1,0 +1,8 @@
+La escucha del puerto: 
+No hay argumentos de línea de comando que se pasa!
+No 'PORT' variable de entorno válido!
+Argumento no válido: 
+El puerto no válido: 
+Variable de entorno no válido: 
+Demasiados argumentos pasado
+Apertura de error: 
