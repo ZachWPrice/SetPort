@@ -38,13 +38,14 @@ vector<string> docs;
     //True if the value is known, and should be skipped
     //False if the value is not known
 bool skipEnvVar(char* env_lang){
-    int skipVarCount = 4;
+    if(env_lang == NULL) return true;
+    
+    int skipVarCount = 3;
     
     const char* toSkip[] = {
-        "\0",
         "",
         "C",
-        "C.UTF-8"
+        "C.UTF-8",
     };
     
     for(int c = 0; c < skipVarCount; c++){
@@ -104,12 +105,13 @@ void setLang(){
     myRegex.imbue (mylocale);
     myRegex.assign ("[a-z][a-z].*");
 
-    int envVarToCheck = 3;
+    int envVarToCheck = 4;
     
     const char* toCheck[] = {
         "LANGUAGE", 
         "LC_ALL",
-        "LANG"
+        "LANG",
+        "LC_MESSAGE"
     };
     
     for(int i = 0; i < envVarToCheck; i++){
