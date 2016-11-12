@@ -301,12 +301,17 @@ int main(int argc, char* args[]) {
         case 4:
             if(strcmp(args[1], "-p") == 0 || strcmp(args[1], "--port") == 0) {
                 if(strcmp(args[2], "-e") == 0 || strcmp(args[2], "--environment") == 0){
+                    if(strcmp(args[3], "--environment") == 0){
+                        printError(lang[INVALID_ENVAR] + (string)args[3] + "\n");
+                        return 3;
+                    }
+                    
                     if(char* env_p = getenv(args[3])){
                         printSuccess(atol(env_p));
                         return endStatus;
                     }
                     else {
-                        errMsg = lang[INVALID_ENVAR] + (string)args[3] + "\n";;
+                        errMsg = lang[INVALID_ENVAR] + (string)args[3] + "\n";
                         endStatus = 3;
                     }
                 }

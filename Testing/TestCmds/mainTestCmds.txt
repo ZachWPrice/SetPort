@@ -12,6 +12,10 @@
 [0]./portsetter.cpp.o --port -e
 [0]./portsetter.cpp.o -p -e PORT
 [0]./portsetter.cpp.o --port -e PORT
+[0]./portsetter.cpp.o -p --environment
+[0]./portsetter.cpp.o --port --environment
+[0]./portsetter.cpp.o -p --environment PORT
+[0]./portsetter.cpp.o --port --environment PORT
 [2]./portsetter.cpp.o help
 [2]./portsetter.cpp.o -help
 [2]./portsetter.cpp.o --h
@@ -25,3 +29,7 @@
 [1]./portsetter.cpp.o -p 90642
 [2]./portsetter.cpp.o -x 45321
 [2]./portsetter.cpp.o -P 714
+[3]./portsetter.cpp.o -p --env
+[3]./portsetter.cpp.o --port --env
+[3]./portsetter.cpp.o -p -e --environment
+[3]./portsetter.cpp.o --port -e --environment
