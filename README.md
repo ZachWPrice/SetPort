@@ -21,12 +21,12 @@ see so in the output of the tests (only if the test fails will mention of it be 
 ```
 Portsetter --option <port>
     Options:
-        -?, -h, --help  Display this help page [Must not have any other arguments]
-        -a, --about, -! Display information about this software
-        -v, --version   Display the version
-        -p, --port      Follwing argument is 'port' [Required for non-help execution]
-        -a, --about     Prints information about the software
-        -e ['ENVVAR']   Used along -p or --port, used to specify an environment variable to use as the port, the default is 'PORT'
+        -?, -h, --help                Display this help page [Must not have any other arguments]
+        -a, --about, -!               Display information about this software
+        -v, --version                 Display the version
+        -p, --port                    Follwing argument is 'port' [Required for non-help execution]
+        -a, --about                   Prints information about the software
+        -e, --environment ['ENVVAR']  Used along -p or --port, used to specify an environment variable to use as the port, the default is 'PORT'
 ```
 ####Localization: 
   Currently English and Spanish are the only supported languages supported by default. The software will look at a few enfironment variables to find which language to use.
