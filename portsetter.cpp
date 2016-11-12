@@ -238,7 +238,13 @@ int main(int argc, char* args[]) {
     string errMsg = "";
     int endStatus = 0;
     
-    setLang();
+    //setLang();
+    //setLang() is crashing the program with a regex error.
+    string temp = "en";
+    lang = composeMsgArray("doc/" + temp + "/setport.messages.txt");
+    docs.push_back("doc/" + temp + "/setport.usage.txt");
+    docs.push_back("doc/" + temp + "/setport.about.txt");
+    docs.push_back("doc/" + temp + "/setport.version.txt");
     
     switch(argc){
         //When no arguments have been passed
@@ -272,7 +278,7 @@ int main(int argc, char* args[]) {
                         printSuccess(atol(args[2]));
                         return endStatus;
                 }
-                else if(strcmp(args[2], "-e") == 0){
+                else if(strcmp(args[2], "-e") == 0 || strcmp(args[2], "--environment") == 0){
                     if(char* env_p = getenv("PORT")){
                         printSuccess(atol(env_p));
                         return endStatus;
@@ -294,13 +300,18 @@ int main(int argc, char* args[]) {
             break;
         case 4:
             if(strcmp(args[1], "-p") == 0 || strcmp(args[1], "--port") == 0) {
-                if(strcmp(args[2], "-e") == 0){
+                if(strcmp(args[2], "-e") == 0 || strcmp(args[2], "--environment") == 0){
+                    if(strcmp(args[3], "--environment") == 0){
+                        printError(lang[INVALID_ENVAR] + (string)args[3] + "\n");
+                        return 3;
+                    }
+                    
                     if(char* env_p = getenv(args[3])){
                         printSuccess(atol(env_p));
                         return endStatus;
                     }
                     else {
-                        errMsg = lang[INVALID_ENVAR] + (string)args[3] + "\n";;
+                        errMsg = lang[INVALID_ENVAR] + (string)args[3] + "\n";
                         endStatus = 3;
                     }
                 }
