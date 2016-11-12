@@ -278,7 +278,7 @@ int main(int argc, char* args[]) {
                         printSuccess(atol(args[2]));
                         return endStatus;
                 }
-                else if(strcmp(args[2], "-e") == 0){
+                else if(strcmp(args[2], "-e") == 0 || strcmp(args[2], "--environment") == 0){
                     if(char* env_p = getenv("PORT")){
                         printSuccess(atol(env_p));
                         return endStatus;
@@ -300,7 +300,7 @@ int main(int argc, char* args[]) {
             break;
         case 4:
             if(strcmp(args[1], "-p") == 0 || strcmp(args[1], "--port") == 0) {
-                if(strcmp(args[2], "-e") == 0){
+                if(strcmp(args[2], "-e") == 0 || strcmp(args[2], "--environment") == 0){
                     if(char* env_p = getenv(args[3])){
                         printSuccess(atol(env_p));
                         return endStatus;
