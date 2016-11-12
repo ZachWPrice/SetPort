@@ -238,7 +238,13 @@ int main(int argc, char* args[]) {
     string errMsg = "";
     int endStatus = 0;
     
-    setLang();
+    //setLang();
+    //setLang() is crashing the program with a regex error.
+    string temp = "en";
+    lang = composeMsgArray("doc/" + temp + "/setport.messages.txt");
+    docs.push_back("doc/" + temp + "/setport.usage.txt");
+    docs.push_back("doc/" + temp + "/setport.about.txt");
+    docs.push_back("doc/" + temp + "/setport.version.txt");
     
     switch(argc){
         //When no arguments have been passed
